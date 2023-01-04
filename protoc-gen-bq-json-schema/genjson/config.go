@@ -49,4 +49,10 @@ func (c *Config) AddToFlagSet(flags *flag.FlagSet) {
 		true,
 		"Use the proto comments to populate the description of the BigQuery field.",
 	)
+	flags.StringVar(
+		&c.SchemaOptions.IncludePath,
+		"include_path",
+		"",
+		"Limits the generation to the given path.",
+	)
 }

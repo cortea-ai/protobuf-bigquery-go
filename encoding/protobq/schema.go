@@ -31,6 +31,8 @@ type SchemaOptions struct {
 	UseModeFromFieldBehavior bool
 	// UseProtoCommentsAsDescription use the proto comments to populate the description of the BigQuery field
 	UseProtoCommentsAsDescription bool
+	// IncludePath limits the generation to the given path
+	IncludePath string
 }
 
 // InferSchema infers a BigQuery schema for the given proto.Message using options in
