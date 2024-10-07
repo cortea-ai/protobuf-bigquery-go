@@ -33,6 +33,10 @@ type SchemaOptions struct {
 	UseProtoCommentsAsDescription bool
 	// IncludePath limits the generation to the given path
 	IncludePath string
+	// UseJSONStructs use JSON type instead of string for google.protobuf.Struct type
+	UseJSONStructs bool
+	// UseJSONValues use JSON type instead of string for google.protobuf.Value type
+	UseJSONValues bool
 }
 
 // InferSchema infers a BigQuery schema for the given proto.Message using options in
@@ -53,6 +57,11 @@ func (o SchemaOptions) InferMessageSchema(msg protoreflect.MessageDescriptor) bi
 	if o.UseOneofFields {
 		for i := 0; i < msg.Oneofs().Len(); i++ {
 			oneof := msg.Oneofs().Get(i)
+			// The `optional` keyword creates a synthetic field treated as an oneof
+			// which creates a new field with _ as prefix missmatching the schema creation
+			if oneof.IsSynthetic() {
+				continue
+			}
 			schema = append(schema, o.inferOneofFieldSchema(oneof))
 		}
 	}
@@ -193,7 +202,10 @@ func (o SchemaOptions) inferFieldSchemaType(field protoreflect.FieldDescriptor) 
 		case wkt.BytesValue:
 			return bigquery.BytesFieldType
 		case wkt.Struct:
-			return bigquery.StringFieldType // JSON string
+			if o.UseJSONStructs {
+				return bigquery.JSONFieldType
+			}
+			return bigquery.StringFieldType
 		case wkt.Date:
 			return bigquery.DateFieldType
 		case wkt.DateTime:
@@ -205,12 +217,17 @@ func (o SchemaOptions) inferFieldSchemaType(field protoreflect.FieldDescriptor) 
 			return bigquery.GeographyFieldType
 		case wkt.TimeOfDay:
 			return bigquery.TimeFieldType
+		case wkt.Value:
+			if o.UseJSONValues {
+				return bigquery.JSONFieldType
+			}
+			return bigquery.StringFieldType
 		}
 	}
 	return bigquery.RecordFieldType
 }
 
-func (o SchemaOptions) inferEnumFieldType(field protoreflect.FieldDescriptor) bigquery.FieldType {
+func (o SchemaOptions) inferEnumFieldType(_ protoreflect.FieldDescriptor) bigquery.FieldType {
 	if o.UseEnumNumbers {
 		return bigquery.IntegerFieldType
 	}
