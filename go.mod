@@ -1,6 +1,8 @@
 module go.einride.tech/protobuf-bigquery
 
-go 1.20
+go 1.21
+
+toolchain go1.22.4
 
 require (
 	cloud.google.com/go v0.115.1

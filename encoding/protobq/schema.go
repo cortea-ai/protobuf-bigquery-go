@@ -237,12 +237,8 @@ func (o SchemaOptions) inferEnumFieldType(_ protoreflect.FieldDescriptor) bigque
 func (o SchemaOptions) inferMapFieldSchema(field protoreflect.FieldDescriptor) *bigquery.FieldSchema {
 	return &bigquery.FieldSchema{
 		Name:        string(field.Name()),
-		Repeated:    true,
-		Type:        bigquery.RecordFieldType,
+		Repeated:    false,
+		Type:        bigquery.JSONFieldType,
 		Description: o.buildDescription(field),
-		Schema: bigquery.Schema{
-			o.inferFieldSchema(field.MapKey()),
-			o.inferFieldSchema(field.MapValue()),
-		},
 	}
 }
